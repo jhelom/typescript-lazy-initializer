@@ -16,7 +16,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci # または npm install
       - run: npm version patch # または npm version minor, npm version major
-      - run: git config --global user.email "1127424+jhelom@users.noreply.github.com "
+      - run: git config --global user.email "1127424+jhelom@users.noreply.github.com"
       - run: git config --global user.name "jhelom"
       - run: git commit -am "Bump version"
       - run: git push
