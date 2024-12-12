@@ -1,34 +1,40 @@
-name: Publish npm package
+name: Publish to npm
 
 on:
   push:
     branches:
-      - main
+      - main  # mainブランチが更新されたときに実行
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      # 1. リポジトリのコードをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Node.js 環境をセットアップ
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18 # 使用する Node.js のバージョン
-          registry-url: https://registry.npmjs.org/
-      - run: npm ci # または npm install
-      - run: npm version patch # または npm version minor, npm version major
-      - run: git config --global user.email "github-actions[bot]@users.noreply.github.com"
-      - run: git config --global user.name "github-actions[bot]"
-      - run: git commit -am "Bump version to ${{ steps.package-version.outputs.currentVersion }}" # コミットメッセージにバージョンを含める
-      - run: git push
-      - run: npm publish
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      # 3. npm 依存関係をインストール
+      - name: Install dependencies
+        run: npm install
+
+      # 4. バージョンを自動で上げる（patchを例に）
+      - name: Bump version
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          npm version patch -m "Bump version to %s [skip ci]"
+          git push origin main --follow-tags
+
+      # 5. npm にパッケージを公開
+      - name: Publish to npm
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.package-version.outputs.currentVersion }}
-          release_name: Release v${{ steps.package-version.outputs.currentVersion }}
-          draft: false
-          prerelease: false
