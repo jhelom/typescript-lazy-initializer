@@ -1,0 +1,48 @@
+name: Publish to npm with automated versioning
+
+on:
+  push:
+    branches:
+      - main # mainブランチにpush時に実行
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリのコードをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # バージョンタグのため完全な履歴を取得
+
+      # Node.jsのセットアップ
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          registry-url: 'https://registry.npmjs.org/'
+
+      # npmの認証
+      - name: Authenticate with npm
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      # npm依存関係のインストール
+      - name: Install dependencies
+        run: npm install
+
+      # バージョン自動更新 (patch, minor, majorから選択)
+      - name: Bump version
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          npm version patch -m "Bump version to %s [skip ci]"
+
+      # バージョン変更をコミット・タグ付け・push
+      - name: Push version changes
+        run: |
+          git push --follow-tags origin main
+
+      # npmパッケージを公開
+      - name: Publish to npm
+        run: npm publish --access public
