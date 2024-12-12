@@ -4,7 +4,6 @@
 .env
 node_modules
 src
-dst
 test
 tests
 tsconfig.json

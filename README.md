@@ -6,5 +6,5 @@ const lazy = new LazyInitializer<string>(() => {
 });
 
 const value = lazy.value;
-consoe.log(value); // foo
+console.log(value); // foo
 ```
