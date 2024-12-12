@@ -1,7 +1,7 @@
 {
   "name": "@jhelom/typescript-lazy-initializer",
   "version": "1.0.4",
-  "main": "index.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
