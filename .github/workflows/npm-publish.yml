@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version: 16 # 使用する Node.js のバージョン
+          node-version: 18 # 使用する Node.js のバージョン
           registry-url: https://registry.npmjs.org/
       - run: npm ci # または npm install
       - run: npm version patch # または npm version minor, npm version major
