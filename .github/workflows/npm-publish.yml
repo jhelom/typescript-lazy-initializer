@@ -1,48 +1,34 @@
-name: Publish to npm with automated versioning
+name: Publish npm package
 
 on:
   push:
     branches:
-      - main # mainブランチにpush時に実行
+      - main
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-
     steps:
-      # リポジトリのコードをチェックアウト
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          fetch-depth: 0 # バージョンタグのため完全な履歴を取得
-
-      # Node.jsのセットアップ
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+          node-version: 16 # 使用する Node.js のバージョン
+          registry-url: https://registry.npmjs.org/
+      - run: npm ci # または npm install
+      - run: npm version patch # または npm version minor, npm version major
+      - run: git config --global user.email "1127424+jhelom@users.noreply.github.com "
+      - run: git config --global user.name "jhelom"
+      - run: git commit -am "Bump version"
+      - run: git push
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          node-version: 18
-          registry-url: 'https://registry.npmjs.org/'
-
-      # npmの認証
-      - name: Authenticate with npm
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
-      # npm依存関係のインストール
-      - name: Install dependencies
-        run: npm install
-
-      # バージョン自動更新 (patch, minor, majorから選択)
-      - name: Bump version
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
-          npm version patch -m "Bump version to %s [skip ci]"
-
-      # バージョン変更をコミット・タグ付け・push
-      - name: Push version changes
-        run: |
-          git push --follow-tags origin main
-
-      # npmパッケージを公開
-      - name: Publish to npm
-        run: npm publish --access public
+          tag_name: v${{ steps.package-version.outputs.currentVersion }}
+          release_name: Release v${{ steps.package-version.outputs.currentVersion }}
+          draft: false
+          prerelease: false
